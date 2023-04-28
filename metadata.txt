@@ -19,6 +19,8 @@ tags=geocoding, geocode, address, Nominatim
 about:This plugin allows the user to search for an address and get its coordinates (geocoding) using GeoCoding using Nominatim and Google web services. It also allows to get the address of a point by clicking on the map canvas (reverse geocoding).
 
 changelog:
+    Version 2.19:
+        Fix "future" import
     Version 2.18:
         Fix inspect issue #30
     Version 2.17:
