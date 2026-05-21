@@ -21,22 +21,14 @@ import sys, os
 
 
 # Import the PyQt and QGIS libraries
-try:
-    from qgis.core import Qgis, QgsMessageLog
-    from PyQt5.QtCore import *
-    from PyQt5.QtGui import *
-    from PyQt5.QtWidgets import *
-    from PyQt5 import uic
-    QT_VERSION=5
-    os.environ['QT_API'] = 'pyqt5'
-    from urllib.request import URLError
-except:
-    from PyQt4.QtCore import *
-    from PyQt4.QtCore import QSettings as QgsSettings
-    from PyQt4.QtGui import *
-    from PyQt4 import uic
-    QT_VERSION=4
-    from urllib2 import URLError
+
+from qgis.core import Qgis, QgsMessageLog
+from qgis.PyQt.QtCore import *
+from qgis.PyQt.QtGui import *
+from qgis.PyQt.QtWidgets import *
+from qgis.PyQt import uic
+from urllib.request import URLError
+
 
 # Import the code for the dialog
 from .GeoCodingDialog import GeoCodingDialog
@@ -57,7 +49,7 @@ class GeoCoding:
         # store layer id
         self.layerid = ''
         self.layer = None
-        
+
 
     def logMessage(self, msg):
         if self.get_config('writeDebug'):
@@ -69,23 +61,16 @@ class GeoCoding:
         self.action = QAction(QIcon(os.path.join(current_directory, "geocode_icon.png")), \
         "&GeoCoding", self.iface.mainWindow())
         # connect the action to the run method
-        if QT_VERSION == 4:
-            self.action.triggered.connect(self.geocode)
-        else:
-            self.action.triggered.connect(self.geocode)
+        self.action.triggered.connect(self.geocode)
 
         # Add toolbar button and menu item
         self.reverseAction=QAction(QIcon(os.path.join(current_directory, "reverse_icon.png")), QCoreApplication.translate('GeoCoding', "&Reverse GeoCoding"), self.iface.mainWindow())
         self.configAction=QAction(QIcon(os.path.join(current_directory, "settings_icon.png")), QCoreApplication.translate('GeoCoding', "&Settings"), self.iface.mainWindow())
         self.aboutAction=QAction(QIcon(os.path.join(current_directory, "about_icon.png")), QCoreApplication.translate('GeoCoding', "&About"), self.iface.mainWindow())
-        if QT_VERSION == 4:
-            self.configAction.triggered.connect(self.config)
-            self.reverseAction.triggered.connect(self.reverse)
-            self.aboutAction.triggered.connect(self.about)
-        else:
-            self.configAction.triggered.connect(self.config)
-            self.reverseAction.triggered.connect(self.reverse)
-            self.aboutAction.triggered.connect(self.about)
+
+        self.configAction.triggered.connect(self.config)
+        self.reverseAction.triggered.connect(self.reverse)
+        self.aboutAction.triggered.connect(self.about)
 
         self.menu = QMenu(QCoreApplication.translate('GeoCoding', "GeoCoding"))
         self.menu.setIcon(QIcon(os.path.join(current_directory, "geocode_icon.png")))
@@ -121,10 +106,12 @@ class GeoCoding:
             index = 1
         dlg.geocoderComboBox.addItems(geocoders.keys())
         dlg.geocoderComboBox.setCurrentIndex(index)
+        dlg.googleKey.setText(self.get_config('googleKey', ''))
+        dlg.debugCheckBox.setChecked(self.get_config('writeDebug', 'false') == 'true')
         # show the dialog
         dlg.show()
         dlg.adjustSize()
-        result = dlg.exec_()
+        result = dlg.exec()
         # See if OK was pressed
         if result == 1:
             # save settings
@@ -148,10 +135,6 @@ class GeoCoding:
 
     def reverse(self):
         # Reverse geocoding
-        chk = self.check_settings()
-        if len(chk) :
-            QMessageBox.information(self.iface.mainWindow(), QCoreApplication.translate('GeoCoding', "GeoCoding plugin error"), chk)
-            return
         sb = self.iface.mainWindow().statusBar()
         sb.showMessage(QCoreApplication.translate('GeoCoding', "Click on the map to obtain the address"))
         ct = ClickTool(self.iface,  self.reverse_action);
@@ -168,7 +151,7 @@ class GeoCoding:
         TODO: clear the map tool on error
         (still haven't find how to do it)
         """
-        
+
         geocoder = self.get_geocoder_instance()
 
         try:
@@ -193,19 +176,15 @@ class GeoCoding:
         # run geocoding
         if self.previous_map_tool:
             self.iface.mapCanvas().setMapTool(self.previous_map_tool)
-        chk = self.check_settings()
-        if len(chk) :
-            QMessageBox.information(self.iface.mainWindow(),QCoreApplication.translate('GeoCoding', "GeoCoding plugin error"), chk)
-            return
 
         geocoder = self.get_geocoder_instance()
-        
+
         # create and show the dialog
         dlg = GeoCodingDialog()
         # show the dialog
         dlg.adjustSize()
         dlg.show()
-        result = dlg.exec_()
+        result = dlg.exec()
         # See if OK was pressed
         if result == 1 :
             try:
@@ -230,7 +209,7 @@ class GeoCoding:
                 place_dlg.placesComboBox.addItem(all_str)
                 place_dlg.placesComboBox.addItems(places.keys())
                 place_dlg.show()
-                result = place_dlg.exec_()
+                result = place_dlg.exec()
                 if result == 1 :
                     if place_dlg.placesComboBox.currentText() == all_str:
                         for place in places:
@@ -265,7 +244,7 @@ class GeoCoding:
         # lon lat and transform
         point = QgsPoint(float(point[0]), float(point[1]))
         point = pointFromWGS84(point, self._get_layer_crs())
-        
+
         # Set the extent to our new point
         self.canvas.setCenter(point)
 
@@ -358,18 +337,6 @@ class GeoCoding:
         self.layer.startEditing()
         self.layer.addFeatures([ fet ])
         self.layer.commitChanges()
-
-
-    # check config and project settings before geocoding,
-    # return an error string
-    def check_settings (self):
-        p = QgsProject.instance()
-        error = ''
-        if QT_VERSION==4:
-            if not self.iface.mapCanvas().hasCrsTransformEnabled() and self.iface.mapCanvas().mapRenderer().destinationCrs().authid() != 'EPSG:4326':
-                error = QCoreApplication.translate('GeoCoding', "On-the-fly reprojection must be enabled if the destination CRS is not EPSG:4326. Please enable on-the-fly reprojection.")
-
-        return error
 
 
 if __name__ == "__main__":

@@ -2,11 +2,11 @@
 ***************************************************************************
 Name			 	 : Geocoding
 Description          : Geocoding and reverse Geocoding using Google
-Date                 : 28/May/09 
+Date                 : 28/May/09
 copyright            : (C) 2009 by ItOpen
 email                : info@itopen.it
  ***************************************************************************/
- 
+
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -20,23 +20,14 @@ email                : info@itopen.it
 import os
 
 # Import the PyQt and QGIS libraries
-try:
-    from qgis.core import Qgis
-    from PyQt5.QtCore import *
-    from PyQt5.QtGui import *
-    from PyQt5.QtWidgets import *
-    from PyQt5 import uic
-    QT_VERSION=5
-    os.environ['QT_API'] = 'pyqt5'
-except:
-    from PyQt4.QtCore import *
-    from PyQt4.QtGui import *
-    from PyQt4 import uic
-    QT_VERSION=4
-
+from qgis.core import Qgis
+from qgis.PyQt.QtCore import *
+from qgis.PyQt.QtGui import *
+from qgis.PyQt.QtWidgets import *
+from qgis.PyQt import uic
 
 # create the dialog for GeoCoding
 class GeoCodingDialog(QDialog):
-  def __init__(self): 
-    super(GeoCodingDialog, self).__init__() 
+  def __init__(self):
+    super(GeoCodingDialog, self).__init__()
     uic.loadUi(os.path.join(os.path.dirname(__file__), 'Ui_GeoCoding.ui'), self)
