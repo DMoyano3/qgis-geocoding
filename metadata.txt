@@ -5,7 +5,7 @@ description:GeoCoding and reverse GeoCoding using Nominatim and Google web servi
 email:apasotti@gmail.com
 author:Alessandro Pasotti
 
-version:2.19
+version:2.20
 qgisMinimumVersion:3.0
 qgisMaximumVersion=4.99
 
@@ -19,6 +19,9 @@ tags=geocoding, geocode, address, Nominatim
 about:This plugin allows the user to search for an address and get its coordinates (geocoding) using GeoCoding using Nominatim and Google web services. It also allows to get the address of a point by clicking on the map canvas (reverse geocoding).
 
 changelog:
+    Version 2.20:
+        Fix #38 NAM crash
+        Fix #37 QT6 compatibility
     Version 2.19:
         Fix "future" import
     Version 2.18:
